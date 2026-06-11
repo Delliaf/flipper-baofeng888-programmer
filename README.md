@@ -13,6 +13,8 @@ A Flipper Zero application to read, edit, and clone memory for Baofeng BF-888S, 
 
 To connect your Flipper Zero to the radio, you will need a Kenwood 2-pin style cable or a custom 1-pin Baofeng cable, wired to the Flipper's GPIO pins:
 
+![Wiring Diagram](wiring.png)
+
 * **Radio TX (Data Out)** -> **Flipper RX (Pin 14)**
 * **Radio RX (Data In)** -> **Flipper TX (Pin 13)**
 * **Radio GND** -> **Flipper GND (Pin 8 or 11)**
