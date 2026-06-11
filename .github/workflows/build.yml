@@ -1,0 +1,39 @@
+name: "FAP Build"
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build FAP
+        uses: flipperdevices/flipperzero-ufbt-action@v0.1.3
+        with:
+          task: build
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: baofeng_programmer_fap
+          path: dist/*.fap
+
+      - name: Release
+        uses: ncipollo/release-action@v1
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        with:
+          tag: "latest"
+          name: "Latest Build"
+          artifacts: "dist/*.fap"
+          allowUpdates: true
+          makeLatest: true
+          prerelease: true

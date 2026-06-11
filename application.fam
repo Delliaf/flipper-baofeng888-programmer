@@ -1,0 +1,17 @@
+App(
+    appid="baofeng_programmer",
+    name="Baofeng 888 Programmer",
+    apptype=FlipperAppType.EXTERNAL,
+    entry_point="baofeng_app_main",
+    stack_size=2 * 1024,
+    fap_category="GPIO",
+    fap_version="1.0",
+    fap_description="Read, Edit and Clone channels for Baofeng BF-888S / Retevis H-777 via UART",
+    fap_icon="icon.png",
+    fap_author="Delliaf",
+    requires=[
+        "gui",
+        "dialogs",
+        "storage",
+    ],
+)
