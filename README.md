@@ -2,6 +2,9 @@
 
 A Flipper Zero application to read, edit, and clone memory for Baofeng BF-888S, Retevis H777, and other compatible radios (using the Baofeng 1-pin serial protocol).
 
+> [!WARNING]
+> **DISCLAIMER**: This application is currently UNTESTED on real hardware. It was built based on protocol specifications and reverse engineering. Use it entirely at your own risk. The authors are not responsible for any damage, bricked radios, or loss of data.
+
 ## Features
 
 * **Full EEPROM Read/Write**: Reads and writes the entire 992-byte EEPROM, preserving system settings (VOX, Squelch, Battery Saver, etc.).
@@ -11,9 +14,9 @@ A Flipper Zero application to read, edit, and clone memory for Baofeng BF-888S, 
 
 ## Screenshots
 
-| Main Menu | Channel Editor | Features |
+| Main Menu | Channel Editor | Wiring/Features |
 |:---:|:---:|:---:|
-| ![Main Menu](1.png) | ![Channel Editor](2.png) | ![Features](3.png) |
+| ![Main Menu](screen_main.png) | ![Channel Editor](screen_editor.png) | ![Wiring/Features](screen_wiring.png) |
 
 ## Hardware Requirements
 
