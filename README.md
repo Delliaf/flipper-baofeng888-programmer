@@ -9,6 +9,12 @@ A Flipper Zero application to read, edit, and clone memory for Baofeng BF-888S, 
 * **CHIRP `.img` Compatibility**: Backups are saved in a fully compatible CHIRP-next `.img` format, allowing you to seamlessly edit your Flipper dumps on a PC.
 * **Legacy Support**: Can load older `.dat` or `.bf8` (256-byte) channel-only dumps and inject them into the active memory map without overwriting system settings.
 
+## Screenshots
+
+| Main Menu | Channel Editor | Features |
+|:---:|:---:|:---:|
+| ![Main Menu](1.png) | ![Channel Editor](2.png) | ![Features](3.png) |
+
 ## Hardware Requirements
 
 To connect your Flipper Zero to the radio, you will need a Kenwood 2-pin style cable or a custom 1-pin Baofeng cable, wired to the Flipper's GPIO pins:
