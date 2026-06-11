@@ -1,3 +1,4 @@
+[![FAP Build](https://github.com/Delliaf/flipper-baofeng888-programmer/actions/workflows/build.yml/badge.svg)](https://github.com/Delliaf/flipper-baofeng888-programmer/actions/workflows/build.yml)
 # Flipper Baofeng/Retevis Programmer
 
 A Flipper Zero application to read, edit, and clone memory for Baofeng BF-888S and Retevis H777 radios.
