@@ -50,6 +50,4 @@ Or you can use the provided GitHub Actions workflow to automatically build the `
 
 ## Credits
 
-Created by Delliaf.
-
 Based on CHIRP reverse engineering of the Baofeng/Retevis protocol.
