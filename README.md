@@ -1,6 +1,6 @@
 # Flipper Baofeng/Retevis Programmer
 
-A Flipper Zero application to read, edit, and clone memory for Baofeng BF-888S, Retevis H777, and other compatible radios (using the Baofeng 1-pin serial protocol).
+A Flipper Zero application to read, edit, and clone memory for Baofeng BF-888S and Retevis H777 radios.
 
 > [!WARNING]
 > **DISCLAIMER**: This application is currently UNTESTED on real hardware. It was built based on protocol specifications and reverse engineering. Use it entirely at your own risk. The authors are not responsible for any damage, bricked radios, or loss of data.
