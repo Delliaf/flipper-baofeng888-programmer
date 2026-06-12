@@ -56,6 +56,7 @@ bool baofeng_scene_main_menu_on_event(void* context, SceneManagerEvent event) {
     if(event.type == SceneManagerEventTypeCustom) {
         if(event.event == BaofengCustomEventMenuRead) {
             bool success = baofeng_radio_read(app);
+            notification_message(app->notification, success ? &sequence_success : &sequence_error);
             snprintf(app->popup_text, sizeof(app->popup_text), success ? "Read Success!" : "Read Failed!\nCheck connection.");
             scene_manager_next_scene(app->scene_manager, BaofengScenePopup);
             consumed = true;
@@ -67,6 +68,7 @@ bool baofeng_scene_main_menu_on_event(void* context, SceneManagerEvent event) {
             do {
                 success = baofeng_radio_write(app);
                 if(success) {
+                    notification_message(app->notification, &sequence_success);
                     DialogMessage* message = dialog_message_alloc();
                     dialog_message_set_header(message, "Write Success!", 64, 10, AlignCenter, AlignTop);
                     dialog_message_set_text(message, "Write to another radio?", 64, 30, AlignCenter, AlignCenter);
@@ -77,6 +79,7 @@ bool baofeng_scene_main_menu_on_event(void* context, SceneManagerEvent event) {
                         break;
                     }
                 } else {
+                    notification_message(app->notification, &sequence_error);
                     snprintf(app->popup_text, sizeof(app->popup_text), "Write Failed!\nCheck connection.");
                     scene_manager_next_scene(app->scene_manager, BaofengScenePopup);
                     break;
@@ -85,6 +88,7 @@ bool baofeng_scene_main_menu_on_event(void* context, SceneManagerEvent event) {
             consumed = true;
         } else if(event.event == BaofengCustomEventMenuLoad) {
             bool success = baofeng_load_dump(app);
+            notification_message(app->notification, success ? &sequence_success : &sequence_error);
             snprintf(app->popup_text, sizeof(app->popup_text), success ? "Load Success!" : "Load Failed!");
             scene_manager_next_scene(app->scene_manager, BaofengScenePopup);
             consumed = true;
@@ -746,6 +750,7 @@ static void save_name_callback(void* context) {
     snprintf(filename, sizeof(filename), "%s.img", app->text_store);
     
     bool success = baofeng_save_dump(app, filename);
+    notification_message(app->notification, success ? &sequence_success : &sequence_error);
     snprintf(app->popup_text, sizeof(app->popup_text), success ? "Saved to\n/ext/baofeng/%s" : "Save Failed!", filename);
     
     scene_manager_previous_scene(app->scene_manager); // pop SaveName, back to main menu

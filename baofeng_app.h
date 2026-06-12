@@ -12,6 +12,8 @@
 #include <gui/modules/text_input.h>
 #include <dialogs/dialogs.h>
 #include <storage/storage.h>
+#include <notification/notification.h>
+#include <notification/notification_messages.h>
 
 #define BAOFENG_CHANNELS_COUNT 16
 #define BAOFENG_UART_CH FuriHalSerialIdUsart
@@ -34,6 +36,7 @@ typedef struct {
     SceneManager* scene_manager;
     DialogsApp* dialogs;
     Storage* storage;
+    NotificationApp* notification;
 
     Submenu* submenu;
     VariableItemList* variable_item_list;
