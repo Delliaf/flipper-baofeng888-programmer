@@ -9,7 +9,6 @@
 #include <gui/modules/variable_item_list.h>
 #include <gui/modules/popup.h>
 #include <gui/modules/widget.h>
-#include <gui/view.h>
 #include <gui/modules/text_input.h>
 #include <dialogs/dialogs.h>
 #include <storage/storage.h>
@@ -40,7 +39,6 @@ typedef struct {
     VariableItemList* variable_item_list;
     Popup* popup;
     Widget* widget;
-    View* wiring_view;
     TextInput* text_input;
 
     uint8_t full_eeprom[992];
@@ -49,21 +47,27 @@ typedef struct {
     uint8_t current_edit_channel;
     char popup_text[64];
     
+    bool debug_mode;
+    uint8_t about_ok_clicks;
+    
     // UI state
     uint32_t current_rx_freq_10hz;
     uint32_t current_tx_freq_10hz;
     
-    char channel_names[BAOFENG_CHANNELS_COUNT][16];
-    char text_store[16]; // For text input
-    bool is_editing_tx;
+    char channel_names[BAOFENG_CHANNELS_COUNT][200];
+    char menu_names[BAOFENG_CHANNELS_COUNT][32];
+    char text_store[200]; // For text input
+    uint8_t text_input_mode; // 0=RX Freq, 1=TX Freq, 2=Name
     
     char item_text_rx[32];
     char item_text_tx[32];
     char item_text_rx_tone[32];
     char item_text_tx_tone[32];
     
+    VariableItem* item_comment;
     VariableItem* item_rx_freq;
     VariableItem* item_tx_freq;
+    
     VariableItem* item_rx_tone_mode;
     VariableItem* item_rx_tone_val;
     VariableItem* item_rx_pol;
@@ -71,8 +75,7 @@ typedef struct {
     VariableItem* item_tx_tone_val;
     VariableItem* item_tx_pol;
     
-    bool debug_mode;
-    uint8_t about_ok_clicks;
+    View* wiring_view;
 } BaofengApp;
 
 typedef enum {
@@ -92,6 +95,7 @@ typedef enum {
     BaofengSceneAbout,
     BaofengSceneWiring,
     BaofengSceneTextInput,
+    BaofengSceneCommentView,
     BaofengSceneSaveName,
     BaofengSceneSettings,
     BaofengSceneCount,
@@ -104,9 +108,10 @@ enum {
     BaofengCustomEventMenuWrite,
     BaofengCustomEventMenuLoad,
     BaofengCustomEventMenuSave,
+    BaofengCustomEventMenuAbout,
     BaofengCustomEventMenuWiring,
     BaofengCustomEventMenuSettings,
-    BaofengCustomEventMenuAbout,
     BaofengCustomEventChannelSelected,
     BaofengCustomEventSaveChannel,
+    BaofengCustomEventCommentEdit,
 };
