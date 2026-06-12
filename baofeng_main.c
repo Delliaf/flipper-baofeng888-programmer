@@ -43,6 +43,7 @@ static BaofengApp* baofeng_app_alloc() {
     app->wiring_view = view_alloc();
     view_set_context(app->wiring_view, app);
     view_set_draw_callback(app->wiring_view, baofeng_wiring_view_draw_callback);
+    view_set_input_callback(app->wiring_view, baofeng_wiring_view_input_callback);
     view_dispatcher_add_view(app->view_dispatcher, BaofengViewWiring, app->wiring_view);
 
     app->text_input = text_input_alloc();

@@ -6,6 +6,7 @@ bool baofeng_scene_main_menu_on_event(void* context, SceneManagerEvent event);
 void baofeng_scene_main_menu_on_exit(void* context);
 
 void baofeng_wiring_view_draw_callback(Canvas* canvas, void* context);
+bool baofeng_wiring_view_input_callback(InputEvent* event, void* context);
 void baofeng_scene_wiring_on_enter(void* context);
 bool baofeng_scene_wiring_on_event(void* context, SceneManagerEvent event);
 void baofeng_scene_wiring_on_exit(void* context);
