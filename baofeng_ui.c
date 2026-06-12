@@ -38,7 +38,7 @@ static void baofeng_main_menu_callback(void* context, uint32_t index) {
 void baofeng_scene_main_menu_on_enter(void* context) {
     BaofengApp* app = context;
     submenu_reset(app->submenu);
-    submenu_set_header(app->submenu, "BF-888s Programmer");
+    submenu_set_header(app->submenu, "BF-888 Programmer");
     submenu_add_item(app->submenu, "Read Radio", BaofengCustomEventMenuRead, baofeng_main_menu_callback, app);
     submenu_add_item(app->submenu, "Edit Channels", BaofengCustomEventMenuEdit, baofeng_main_menu_callback, app);
     submenu_add_item(app->submenu, "Radio settings", BaofengCustomEventMenuSettings, baofeng_main_menu_callback, app);
