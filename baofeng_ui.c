@@ -179,51 +179,140 @@ static void freq_enter_callback(void* context, uint32_t index) {
     }
 }
 
-static void set_tone_ui(VariableItem* item, uint8_t index, char* text_buffer, BF888S_Channel* ch, bool is_tx) {
-    uint8_t* tone_ptr = is_tx ? ch->txtone : ch->rxtone;
-    if (index == 0) {
-        snprintf(text_buffer, 32, "None");
-        encode_tone(ToneTypeNone, 0, tone_ptr);
-    } else if (index <= CTCSS_COUNT) {
-        uint16_t val = ctcss_tones[index - 1];
+static void set_tone_val_text(VariableItem* item_val, char* text_buffer, uint8_t* tone_ptr) {
+    uint16_t val;
+    ToneType type = decode_tone(tone_ptr, &val);
+    if(type == ToneTypeNone) {
+        snprintf(text_buffer, 32, "N/A");
+    } else if(type == ToneTypeCTCSS) {
         snprintf(text_buffer, 32, "%d.%d Hz", val/10, val%10);
-        encode_tone(ToneTypeCTCSS, val, tone_ptr);
-    } else {
-        uint16_t val = dcs_codes[index - CTCSS_COUNT - 1];
+    } else if(type == ToneTypeDCS) {
         snprintf(text_buffer, 32, "D%03d", val);
-        uint8_t pol = tone_ptr[1] & 0x40; // save pol
-        encode_tone(ToneTypeDCS, val, tone_ptr);
-        tone_ptr[1] |= pol; // restore pol
     }
-    variable_item_set_current_value_text(item, text_buffer);
+    variable_item_set_current_value_text(item_val, text_buffer);
 }
 
-static void update_pol_visibility(VariableItem* item_pol, uint8_t* tone_ptr) {
-    if(!item_pol) return;
-    
+static void update_tone_val_visibility(VariableItem* item_val, VariableItem* item_pol, char* text_buffer, uint8_t* tone_ptr) {
+    if(!item_val) return;
     uint16_t val;
     ToneType type = decode_tone(tone_ptr, &val);
     
-    if (type == ToneTypeDCS) {
-        variable_item_set_values_count(item_pol, 2);
-        uint8_t pol_idx = (tone_ptr[1] & 0x40) ? 1 : 0;
-        variable_item_set_current_value_index(item_pol, pol_idx);
-        variable_item_set_current_value_text(item_pol, pol_idx ? "R (Inv)" : "N (Norm)");
-    } else {
-        variable_item_set_values_count(item_pol, 1);
-        variable_item_set_current_value_index(item_pol, 0);
-        variable_item_set_current_value_text(item_pol, "N/A");
+    if (type == ToneTypeNone) {
+        variable_item_set_current_value_index(item_val, 0);
+        variable_item_set_values_count(item_val, 1);
+        variable_item_set_current_value_index(item_val, 0);
+        
+        if (item_pol) {
+            variable_item_set_values_count(item_pol, 1);
+            variable_item_set_current_value_index(item_pol, 0);
+            variable_item_set_current_value_text(item_pol, "N/A");
+        }
+    } else if (type == ToneTypeCTCSS) {
+        variable_item_set_current_value_index(item_val, 0);
+        variable_item_set_values_count(item_val, CTCSS_COUNT);
+        uint8_t idx = find_ctcss_idx(val);
+        variable_item_set_current_value_index(item_val, idx);
+        
+        if (item_pol) {
+            variable_item_set_values_count(item_pol, 1);
+            variable_item_set_current_value_index(item_pol, 0);
+            variable_item_set_current_value_text(item_pol, "N/A");
+        }
+    } else if (type == ToneTypeDCS) {
+        variable_item_set_current_value_index(item_val, 0);
+        variable_item_set_values_count(item_val, DCS_COUNT);
+        uint8_t idx = find_dcs_idx(val);
+        variable_item_set_current_value_index(item_val, idx);
+        
+        if (item_pol) {
+            variable_item_set_values_count(item_pol, 2);
+            uint8_t pol_idx = (tone_ptr[1] & 0x40) ? 1 : 0;
+            variable_item_set_current_value_index(item_pol, pol_idx);
+            variable_item_set_current_value_text(item_pol, pol_idx ? "R (Inv)" : "N (Norm)");
+        }
     }
+    set_tone_val_text(item_val, text_buffer, tone_ptr);
+}
+
+static void rx_tone_mode_changed(VariableItem* item) {
+    BaofengApp* app = variable_item_get_context(item);
+    uint8_t index = variable_item_get_current_value_index(item);
+    uint8_t* tone_ptr = app->channels[app->current_edit_channel].rxtone;
+    
+    if (index == 0) {
+        variable_item_set_current_value_text(item, "None");
+        encode_tone(ToneTypeNone, 0, tone_ptr);
+    } else if (index == 1) {
+        variable_item_set_current_value_text(item, "CTCSS");
+        encode_tone(ToneTypeCTCSS, ctcss_tones[0], tone_ptr);
+    } else if (index == 2) {
+        variable_item_set_current_value_text(item, "DTCS");
+        encode_tone(ToneTypeDCS, dcs_codes[0], tone_ptr);
+    }
+    update_tone_val_visibility(app->item_rx_tone_val, app->item_rx_pol, app->item_text_rx_tone, tone_ptr);
+}
+
+static void tx_tone_mode_changed(VariableItem* item) {
+    BaofengApp* app = variable_item_get_context(item);
+    uint8_t index = variable_item_get_current_value_index(item);
+    uint8_t* tone_ptr = app->channels[app->current_edit_channel].txtone;
+    
+    if (index == 0) {
+        variable_item_set_current_value_text(item, "None");
+        encode_tone(ToneTypeNone, 0, tone_ptr);
+    } else if (index == 1) {
+        variable_item_set_current_value_text(item, "CTCSS");
+        encode_tone(ToneTypeCTCSS, ctcss_tones[0], tone_ptr);
+    } else if (index == 2) {
+        variable_item_set_current_value_text(item, "DTCS");
+        encode_tone(ToneTypeDCS, dcs_codes[0], tone_ptr);
+    }
+    update_tone_val_visibility(app->item_tx_tone_val, app->item_tx_pol, app->item_text_tx_tone, tone_ptr);
+}
+
+static void rx_tone_val_changed(VariableItem* item) {
+    BaofengApp* app = variable_item_get_context(item);
+    uint8_t index = variable_item_get_current_value_index(item); 
+    uint8_t* tone_ptr = app->channels[app->current_edit_channel].rxtone;
+    
+    uint16_t dummy;
+    ToneType type = decode_tone(tone_ptr, &dummy);
+    uint8_t pol = tone_ptr[1] & 0x40;
+    
+    if (type == ToneTypeCTCSS) {
+        encode_tone(ToneTypeCTCSS, ctcss_tones[index], tone_ptr);
+    } else if (type == ToneTypeDCS) {
+        encode_tone(ToneTypeDCS, dcs_codes[index], tone_ptr);
+        tone_ptr[1] |= pol;
+    }
+    
+    set_tone_val_text(item, app->item_text_rx_tone, tone_ptr);
+}
+
+static void tx_tone_val_changed(VariableItem* item) {
+    BaofengApp* app = variable_item_get_context(item);
+    uint8_t index = variable_item_get_current_value_index(item); 
+    uint8_t* tone_ptr = app->channels[app->current_edit_channel].txtone;
+    
+    uint16_t dummy;
+    ToneType type = decode_tone(tone_ptr, &dummy);
+    uint8_t pol = tone_ptr[1] & 0x40;
+    
+    if (type == ToneTypeCTCSS) {
+        encode_tone(ToneTypeCTCSS, ctcss_tones[index], tone_ptr);
+    } else if (type == ToneTypeDCS) {
+        encode_tone(ToneTypeDCS, dcs_codes[index], tone_ptr);
+        tone_ptr[1] |= pol;
+    }
+    
+    set_tone_val_text(item, app->item_text_tx_tone, tone_ptr);
 }
 
 static void rx_dcs_pol_changed(VariableItem* item) {
     BaofengApp* app = variable_item_get_context(item);
     uint8_t index = variable_item_get_current_value_index(item);
-    
-    // Ignore changes if N/A
     uint16_t val;
     if (decode_tone(app->channels[app->current_edit_channel].rxtone, &val) != ToneTypeDCS) return;
-
     variable_item_set_current_value_text(item, index ? "R (Inv)" : "N (Norm)");
     if(index) app->channels[app->current_edit_channel].rxtone[1] |= 0x40;
     else app->channels[app->current_edit_channel].rxtone[1] &= ~0x40;
@@ -232,28 +321,11 @@ static void rx_dcs_pol_changed(VariableItem* item) {
 static void tx_dcs_pol_changed(VariableItem* item) {
     BaofengApp* app = variable_item_get_context(item);
     uint8_t index = variable_item_get_current_value_index(item);
-    
-    // Ignore changes if N/A
     uint16_t val;
     if (decode_tone(app->channels[app->current_edit_channel].txtone, &val) != ToneTypeDCS) return;
-
     variable_item_set_current_value_text(item, index ? "R (Inv)" : "N (Norm)");
     if(index) app->channels[app->current_edit_channel].txtone[1] |= 0x40;
     else app->channels[app->current_edit_channel].txtone[1] &= ~0x40;
-}
-
-static void rx_tone_changed(VariableItem* item) {
-    BaofengApp* app = variable_item_get_context(item);
-    uint8_t index = variable_item_get_current_value_index(item);
-    set_tone_ui(item, index, app->item_text_rx_tone, &app->channels[app->current_edit_channel], false);
-    update_pol_visibility(app->item_rx_pol, app->channels[app->current_edit_channel].rxtone);
-}
-
-static void tx_tone_changed(VariableItem* item) {
-    BaofengApp* app = variable_item_get_context(item);
-    uint8_t index = variable_item_get_current_value_index(item);
-    set_tone_ui(item, index, app->item_text_tx_tone, &app->channels[app->current_edit_channel], true);
-    update_pol_visibility(app->item_tx_pol, app->channels[app->current_edit_channel].txtone);
 }
 
 static void tx_power_changed(VariableItem* item) {
@@ -331,33 +403,38 @@ void baofeng_scene_channel_edit_on_enter(void* context) {
     // Tones
     uint16_t tone_val;
     ToneType tone_type;
-    uint8_t num_tones = 1 + CTCSS_COUNT + DCS_COUNT; // None + CTCSS + DCS
     
-    // RX Tone
-    VariableItem* item_rx_tone = variable_item_list_add(app->variable_item_list, "RX Tone", num_tones, rx_tone_changed, app);
+    // RX Tone Mode
+    app->item_rx_tone_mode = variable_item_list_add(app->variable_item_list, "RX Tone Mode", 3, rx_tone_mode_changed, app);
     tone_type = decode_tone(ch->rxtone, &tone_val);
-    uint8_t rx_tone_idx = 0;
-    if(tone_type == ToneTypeCTCSS) rx_tone_idx = 1 + find_ctcss_idx(tone_val);
-    else if(tone_type == ToneTypeDCS) rx_tone_idx = 1 + CTCSS_COUNT + find_dcs_idx(tone_val);
-    variable_item_set_current_value_index(item_rx_tone, rx_tone_idx);
-    set_tone_ui(item_rx_tone, rx_tone_idx, app->item_text_rx_tone, ch, false);
+    uint8_t rx_mode_idx = (tone_type == ToneTypeNone) ? 0 : (tone_type == ToneTypeCTCSS ? 1 : 2);
+    variable_item_set_current_value_index(app->item_rx_tone_mode, rx_mode_idx);
+    variable_item_set_current_value_text(app->item_rx_tone_mode, rx_mode_idx == 0 ? "None" : (rx_mode_idx == 1 ? "CTCSS" : "DTCS"));
     
-    // TX Tone
-    VariableItem* item_tx_tone = variable_item_list_add(app->variable_item_list, "TX Tone", num_tones, tx_tone_changed, app);
-    tone_type = decode_tone(ch->txtone, &tone_val);
-    uint8_t tx_tone_idx = 0;
-    if(tone_type == ToneTypeCTCSS) tx_tone_idx = 1 + find_ctcss_idx(tone_val);
-    else if(tone_type == ToneTypeDCS) tx_tone_idx = 1 + CTCSS_COUNT + find_dcs_idx(tone_val);
-    variable_item_set_current_value_index(item_tx_tone, tx_tone_idx);
-    set_tone_ui(item_tx_tone, tx_tone_idx, app->item_text_tx_tone, ch, true);
+    // RX Tone Val
+    app->item_rx_tone_val = variable_item_list_add(app->variable_item_list, "RX Tone Val", 1, rx_tone_val_changed, app);
     
     // RX Polarity
-    app->item_rx_pol = variable_item_list_add(app->variable_item_list, "RX DCS Pol", 2, rx_dcs_pol_changed, app);
-    update_pol_visibility(app->item_rx_pol, ch->rxtone);
+    app->item_rx_pol = variable_item_list_add(app->variable_item_list, "RX DCS Pol", 1, rx_dcs_pol_changed, app);
+    
+    // Init RX Tone Vis
+    update_tone_val_visibility(app->item_rx_tone_val, app->item_rx_pol, app->item_text_rx_tone, ch->rxtone);
 
+    // TX Tone Mode
+    app->item_tx_tone_mode = variable_item_list_add(app->variable_item_list, "TX Tone Mode", 3, tx_tone_mode_changed, app);
+    tone_type = decode_tone(ch->txtone, &tone_val);
+    uint8_t tx_mode_idx = (tone_type == ToneTypeNone) ? 0 : (tone_type == ToneTypeCTCSS ? 1 : 2);
+    variable_item_set_current_value_index(app->item_tx_tone_mode, tx_mode_idx);
+    variable_item_set_current_value_text(app->item_tx_tone_mode, tx_mode_idx == 0 ? "None" : (tx_mode_idx == 1 ? "CTCSS" : "DTCS"));
+    
+    // TX Tone Val
+    app->item_tx_tone_val = variable_item_list_add(app->variable_item_list, "TX Tone Val", 1, tx_tone_val_changed, app);
+    
     // TX Polarity
-    app->item_tx_pol = variable_item_list_add(app->variable_item_list, "TX DCS Pol", 2, tx_dcs_pol_changed, app);
-    update_pol_visibility(app->item_tx_pol, ch->txtone);
+    app->item_tx_pol = variable_item_list_add(app->variable_item_list, "TX DCS Pol", 1, tx_dcs_pol_changed, app);
+    
+    // Init TX Tone Vis
+    update_tone_val_visibility(app->item_tx_tone_val, app->item_tx_pol, app->item_text_tx_tone, ch->txtone);
     
     // Flags
     VariableItem* item_pow = variable_item_list_add(app->variable_item_list, "TX Power", 2, tx_power_changed, app);

@@ -64,7 +64,11 @@ typedef struct {
     
     VariableItem* item_rx_freq;
     VariableItem* item_tx_freq;
+    VariableItem* item_rx_tone_mode;
+    VariableItem* item_rx_tone_val;
     VariableItem* item_rx_pol;
+    VariableItem* item_tx_tone_mode;
+    VariableItem* item_tx_tone_val;
     VariableItem* item_tx_pol;
     
     bool debug_mode;
