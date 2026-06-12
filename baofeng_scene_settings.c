@@ -98,7 +98,7 @@ static void settings_changed_callback(VariableItem* item) {
             update_bool_item(item, index);
             break;
         case ItemFMRadio:
-            eeprom[EEPROM_FM_RADIO] = index ? 0xFF : 0x00;
+            eeprom[EEPROM_FM_RADIO] = index ? 0x01 : 0x00;
             update_bool_item(item, index);
             break;
         case ItemBeep:
