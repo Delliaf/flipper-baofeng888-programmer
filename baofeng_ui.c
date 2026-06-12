@@ -203,8 +203,8 @@ static void update_tone_val_visibility(VariableItem* item_val, VariableItem* ite
         variable_item_set_current_value_index(item_val, 0);
         
         if (item_pol) {
-            variable_item_set_values_count(item_pol, 1);
             variable_item_set_current_value_index(item_pol, 0);
+            variable_item_set_values_count(item_pol, 1);
             variable_item_set_current_value_text(item_pol, "N/A");
         }
     } else if (type == ToneTypeCTCSS) {
@@ -214,8 +214,8 @@ static void update_tone_val_visibility(VariableItem* item_val, VariableItem* ite
         variable_item_set_current_value_index(item_val, idx);
         
         if (item_pol) {
-            variable_item_set_values_count(item_pol, 1);
             variable_item_set_current_value_index(item_pol, 0);
+            variable_item_set_values_count(item_pol, 1);
             variable_item_set_current_value_text(item_pol, "N/A");
         }
     } else if (type == ToneTypeDCS) {
