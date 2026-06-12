@@ -190,10 +190,28 @@ static void set_tone_ui(VariableItem* item, uint8_t index, char* text_buffer, BF
         encode_tone(ToneTypeCTCSS, val, tone_ptr);
     } else {
         uint16_t val = dcs_codes[index - CTCSS_COUNT - 1];
-        snprintf(text_buffer, 32, "D%03dN", val);
+        snprintf(text_buffer, 32, "D%03d", val);
+        uint8_t pol = tone_ptr[1] & 0x40; // save pol
         encode_tone(ToneTypeDCS, val, tone_ptr);
+        tone_ptr[1] |= pol; // restore pol
     }
     variable_item_set_current_value_text(item, text_buffer);
+}
+
+static void rx_dcs_pol_changed(VariableItem* item) {
+    BaofengApp* app = variable_item_get_context(item);
+    uint8_t index = variable_item_get_current_value_index(item);
+    variable_item_set_current_value_text(item, index ? "R (Inv)" : "N (Norm)");
+    if(index) app->channels[app->current_edit_channel].rxtone[1] |= 0x40;
+    else app->channels[app->current_edit_channel].rxtone[1] &= ~0x40;
+}
+
+static void tx_dcs_pol_changed(VariableItem* item) {
+    BaofengApp* app = variable_item_get_context(item);
+    uint8_t index = variable_item_get_current_value_index(item);
+    variable_item_set_current_value_text(item, index ? "R (Inv)" : "N (Norm)");
+    if(index) app->channels[app->current_edit_channel].txtone[1] |= 0x40;
+    else app->channels[app->current_edit_channel].txtone[1] &= ~0x40;
 }
 
 static void rx_tone_changed(VariableItem* item) {
@@ -219,7 +237,7 @@ static void tx_power_changed(VariableItem* item) {
 static void narrow_changed(VariableItem* item) {
     BaofengApp* app = variable_item_get_context(item);
     uint8_t index = variable_item_get_current_value_index(item);
-    variable_item_set_current_value_text(item, index ? "Narrow" : "Wide");
+    variable_item_set_current_value_text(item, index ? "NFM" : "FM");
     if(index) app->channels[app->current_edit_channel].flags |= 0x04; // narrow
     else app->channels[app->current_edit_channel].flags &= ~0x04;
 }
@@ -227,7 +245,7 @@ static void narrow_changed(VariableItem* item) {
 static void scan_add_changed(VariableItem* item) {
     BaofengApp* app = variable_item_get_context(item);
     uint8_t index = variable_item_get_current_value_index(item);
-    variable_item_set_current_value_text(item, index ? "No" : "Yes");
+    variable_item_set_current_value_text(item, index ? "Yes" : "No");
     if(index) app->channels[app->current_edit_channel].flags |= 0x10; // skip=1
     else app->channels[app->current_edit_channel].flags &= ~0x10;
 }
@@ -303,21 +321,33 @@ void baofeng_scene_channel_edit_on_enter(void* context) {
     variable_item_set_current_value_index(item_tx_tone, tx_tone_idx);
     set_tone_ui(item_tx_tone, tx_tone_idx, app->item_text_tx_tone, ch, true);
     
+    // RX Polarity
+    VariableItem* item_rx_pol = variable_item_list_add(app->variable_item_list, "RX DCS Pol", 2, rx_dcs_pol_changed, app);
+    uint8_t rx_pol_idx = (ch->rxtone[1] & 0x40) ? 1 : 0;
+    variable_item_set_current_value_index(item_rx_pol, rx_pol_idx);
+    variable_item_set_current_value_text(item_rx_pol, rx_pol_idx ? "R (Inv)" : "N (Norm)");
+
+    // TX Polarity
+    VariableItem* item_tx_pol = variable_item_list_add(app->variable_item_list, "TX DCS Pol", 2, tx_dcs_pol_changed, app);
+    uint8_t tx_pol_idx = (ch->txtone[1] & 0x40) ? 1 : 0;
+    variable_item_set_current_value_index(item_tx_pol, tx_pol_idx);
+    variable_item_set_current_value_text(item_tx_pol, tx_pol_idx ? "R (Inv)" : "N (Norm)");
+    
     // Flags
     VariableItem* item_pow = variable_item_list_add(app->variable_item_list, "TX Power", 2, tx_power_changed, app);
     uint8_t pow_idx = (ch->flags & 0x08) ? 1 : 0;
     variable_item_set_current_value_index(item_pow, pow_idx);
     variable_item_set_current_value_text(item_pow, pow_idx ? "High" : "Low");
     
-    VariableItem* item_wn = variable_item_list_add(app->variable_item_list, "Bandwidth", 2, narrow_changed, app);
+    VariableItem* item_wn = variable_item_list_add(app->variable_item_list, "Mode", 2, narrow_changed, app);
     uint8_t wn_idx = (ch->flags & 0x04) ? 1 : 0;
     variable_item_set_current_value_index(item_wn, wn_idx);
-    variable_item_set_current_value_text(item_wn, wn_idx ? "Narrow" : "Wide");
+    variable_item_set_current_value_text(item_wn, wn_idx ? "NFM" : "FM");
 
-    VariableItem* item_scan = variable_item_list_add(app->variable_item_list, "Scan Add", 2, scan_add_changed, app);
-    uint8_t scan_idx = (ch->flags & 0x10) ? 1 : 0; // 1=Skip, so 0=Yes
+    VariableItem* item_scan = variable_item_list_add(app->variable_item_list, "Scan Skip", 2, scan_add_changed, app);
+    uint8_t scan_idx = (ch->flags & 0x10) ? 1 : 0; // 1=Skip
     variable_item_set_current_value_index(item_scan, scan_idx);
-    variable_item_set_current_value_text(item_scan, scan_idx ? "No" : "Yes");
+    variable_item_set_current_value_text(item_scan, scan_idx ? "Yes" : "No");
     
     VariableItem* item_beat = variable_item_list_add(app->variable_item_list, "Beat Shift", 2, beat_shift_changed, app);
     uint8_t beat_idx = (ch->flags & 0x02) ? 0 : 1; // 0=No, 1=Yes
