@@ -63,9 +63,25 @@ bool baofeng_scene_main_menu_on_event(void* context, SceneManagerEvent event) {
             scene_manager_next_scene(app->scene_manager, BaofengSceneChannelList);
             consumed = true;
         } else if(event.event == BaofengCustomEventMenuWrite) {
-            bool success = baofeng_radio_write(app);
-            snprintf(app->popup_text, sizeof(app->popup_text), success ? "Write Success!" : "Write Failed!\nCheck connection.");
-            scene_manager_next_scene(app->scene_manager, BaofengScenePopup);
+            bool success;
+            do {
+                success = baofeng_radio_write(app);
+                if(success) {
+                    DialogMessage* message = dialog_message_alloc();
+                    dialog_message_set_header(message, "Write Success!", 64, 10, AlignCenter, AlignTop);
+                    dialog_message_set_text(message, "Write to another radio?", 64, 30, AlignCenter, AlignCenter);
+                    dialog_message_set_buttons(message, "No", NULL, "Yes");
+                    DialogMessageButton result = dialog_message_show(app->dialogs, message);
+                    dialog_message_free(message);
+                    if(result != DialogMessageButtonRight) {
+                        break;
+                    }
+                } else {
+                    snprintf(app->popup_text, sizeof(app->popup_text), "Write Failed!\nCheck connection.");
+                    scene_manager_next_scene(app->scene_manager, BaofengScenePopup);
+                    break;
+                }
+            } while(true);
             consumed = true;
         } else if(event.event == BaofengCustomEventMenuLoad) {
             bool success = baofeng_load_dump(app);
