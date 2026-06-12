@@ -17,7 +17,7 @@ A Flipper Zero application to read, edit, and clone memory for Baofeng BF-888S a
 
 | Main Menu | Channel List | Channel Editor |
 |:---:|:---:|:---:|
-| ![Main Menu]() | ![Channel List](images/screen_channels.png) | ![Channel Editor](images/screen_ch_editor.png) |
+| ![Main Menu](images/screen_main.png) | ![Channel List](images/screen_channels.png) | ![Channel Editor](images/screen_ch_editor.png) |
 
 ## Hardware Requirements
 
