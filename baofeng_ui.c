@@ -42,7 +42,7 @@ void baofeng_scene_main_menu_on_enter(void* context) {
     submenu_add_item(app->submenu, "Read Radio", BaofengCustomEventMenuRead, baofeng_main_menu_callback, app);
     submenu_add_item(app->submenu, "Edit Channels", BaofengCustomEventMenuEdit, baofeng_main_menu_callback, app);
     submenu_add_item(app->submenu, "Radio settings", BaofengCustomEventMenuSettings, baofeng_main_menu_callback, app);
-    submenu_add_item(app->submenu, "Write (Clone) Radio", BaofengCustomEventMenuWrite, baofeng_main_menu_callback, app);
+    submenu_add_item(app->submenu, "Write Radio", BaofengCustomEventMenuWrite, baofeng_main_menu_callback, app);
     submenu_add_item(app->submenu, "Load from SD", BaofengCustomEventMenuLoad, baofeng_main_menu_callback, app);
     submenu_add_item(app->submenu, "Save to SD", BaofengCustomEventMenuSave, baofeng_main_menu_callback, app);
     submenu_add_item(app->submenu, "Wiring", BaofengCustomEventMenuWiring, baofeng_main_menu_callback, app);
