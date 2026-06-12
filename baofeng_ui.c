@@ -32,23 +32,19 @@ static uint8_t find_dcs_idx(uint16_t val) {
 // --- Main Menu ---
 static void baofeng_main_menu_callback(void* context, uint32_t index) {
     BaofengApp* app = context;
-    if(index == 0) view_dispatcher_send_custom_event(app->view_dispatcher, BaofengCustomEventMenuRead);
-    else if(index == 1) view_dispatcher_send_custom_event(app->view_dispatcher, BaofengCustomEventMenuEdit);
-    else if(index == 2) view_dispatcher_send_custom_event(app->view_dispatcher, BaofengCustomEventMenuWrite);
-    else if(index == 3) view_dispatcher_send_custom_event(app->view_dispatcher, BaofengCustomEventMenuLoad);
     view_dispatcher_send_custom_event(app->view_dispatcher, index);
 }
 
 void baofeng_scene_main_menu_on_enter(void* context) {
     BaofengApp* app = context;
     submenu_reset(app->submenu);
-    submenu_set_header(app->submenu, "Baofeng 888 Programmer");
+    submenu_set_header(app->submenu, "BF-888s Programmer");
     submenu_add_item(app->submenu, "Read Radio", BaofengCustomEventMenuRead, baofeng_main_menu_callback, app);
     submenu_add_item(app->submenu, "Edit Channels", BaofengCustomEventMenuEdit, baofeng_main_menu_callback, app);
+    submenu_add_item(app->submenu, "Radio settings", BaofengCustomEventMenuSettings, baofeng_main_menu_callback, app);
     submenu_add_item(app->submenu, "Write (Clone) Radio", BaofengCustomEventMenuWrite, baofeng_main_menu_callback, app);
     submenu_add_item(app->submenu, "Load from SD", BaofengCustomEventMenuLoad, baofeng_main_menu_callback, app);
     submenu_add_item(app->submenu, "Save to SD", BaofengCustomEventMenuSave, baofeng_main_menu_callback, app);
-    submenu_add_item(app->submenu, "Settings", BaofengCustomEventMenuSettings, baofeng_main_menu_callback, app);
     submenu_add_item(app->submenu, "Wiring", BaofengCustomEventMenuWiring, baofeng_main_menu_callback, app);
     submenu_add_item(app->submenu, "About / Help", BaofengCustomEventMenuAbout, baofeng_main_menu_callback, app);
     view_dispatcher_switch_to_view(app->view_dispatcher, BaofengViewSubmenu);

@@ -30,6 +30,7 @@ enum SettingsItem {
     ItemVoicePrompt,
     ItemVoiceLanguage,
     ItemScan,
+    ItemScanMode,
     ItemVOX,
     ItemVOXLevel,
     ItemVOXInhibitRX,
@@ -42,7 +43,6 @@ enum SettingsItem {
     ItemSquelchLevel,
     ItemSideKey,
     ItemTimeout,
-    ItemScanMode,
     ItemCount
 };
 
@@ -155,6 +155,12 @@ void baofeng_scene_settings_on_enter(void* context) {
     item = variable_item_list_add(vil, "Scan", 2, settings_changed_callback, app);
     update_bool_item(item, eeprom[EEPROM_SCAN]);
 
+    // ItemScanMode
+    item = variable_item_list_add(vil, "Scan Mode", 2, settings_changed_callback, app);
+    uint8_t sm = (eeprom[EEPROM_SCANMODE] & (1 << 0)) != 0;
+    variable_item_set_current_value_index(item, sm);
+    variable_item_set_current_value_text(item, scanmode_names[sm]);
+
     // ItemVOX
     item = variable_item_list_add(vil, "VOX", 2, settings_changed_callback, app);
     update_bool_item(item, eeprom[EEPROM_VOX]);
@@ -218,12 +224,6 @@ void baofeng_scene_settings_on_enter(void* context) {
     if(tt > 10) tt = 0;
     variable_item_set_current_value_index(item, tt);
     variable_item_set_current_value_text(item, timeout_names[tt]);
-
-    // ItemScanMode
-    item = variable_item_list_add(vil, "Scan Mode", 2, settings_changed_callback, app);
-    uint8_t sm = (eeprom[EEPROM_SCANMODE] & (1 << 0)) != 0;
-    variable_item_set_current_value_index(item, sm);
-    variable_item_set_current_value_text(item, scanmode_names[sm]);
 
     view_dispatcher_switch_to_view(app->view_dispatcher, BaofengViewVariableItemList);
 }
