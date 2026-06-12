@@ -198,9 +198,32 @@ static void set_tone_ui(VariableItem* item, uint8_t index, char* text_buffer, BF
     variable_item_set_current_value_text(item, text_buffer);
 }
 
+static void update_pol_visibility(VariableItem* item_pol, uint8_t* tone_ptr) {
+    if(!item_pol) return;
+    
+    uint16_t val;
+    ToneType type = decode_tone(tone_ptr, &val);
+    
+    if (type == ToneTypeDCS) {
+        variable_item_set_values_count(item_pol, 2);
+        uint8_t pol_idx = (tone_ptr[1] & 0x40) ? 1 : 0;
+        variable_item_set_current_value_index(item_pol, pol_idx);
+        variable_item_set_current_value_text(item_pol, pol_idx ? "R (Inv)" : "N (Norm)");
+    } else {
+        variable_item_set_values_count(item_pol, 1);
+        variable_item_set_current_value_index(item_pol, 0);
+        variable_item_set_current_value_text(item_pol, "N/A");
+    }
+}
+
 static void rx_dcs_pol_changed(VariableItem* item) {
     BaofengApp* app = variable_item_get_context(item);
     uint8_t index = variable_item_get_current_value_index(item);
+    
+    // Ignore changes if N/A
+    uint16_t val;
+    if (decode_tone(app->channels[app->current_edit_channel].rxtone, &val) != ToneTypeDCS) return;
+
     variable_item_set_current_value_text(item, index ? "R (Inv)" : "N (Norm)");
     if(index) app->channels[app->current_edit_channel].rxtone[1] |= 0x40;
     else app->channels[app->current_edit_channel].rxtone[1] &= ~0x40;
@@ -209,6 +232,11 @@ static void rx_dcs_pol_changed(VariableItem* item) {
 static void tx_dcs_pol_changed(VariableItem* item) {
     BaofengApp* app = variable_item_get_context(item);
     uint8_t index = variable_item_get_current_value_index(item);
+    
+    // Ignore changes if N/A
+    uint16_t val;
+    if (decode_tone(app->channels[app->current_edit_channel].txtone, &val) != ToneTypeDCS) return;
+
     variable_item_set_current_value_text(item, index ? "R (Inv)" : "N (Norm)");
     if(index) app->channels[app->current_edit_channel].txtone[1] |= 0x40;
     else app->channels[app->current_edit_channel].txtone[1] &= ~0x40;
@@ -218,12 +246,14 @@ static void rx_tone_changed(VariableItem* item) {
     BaofengApp* app = variable_item_get_context(item);
     uint8_t index = variable_item_get_current_value_index(item);
     set_tone_ui(item, index, app->item_text_rx_tone, &app->channels[app->current_edit_channel], false);
+    update_pol_visibility(app->item_rx_pol, app->channels[app->current_edit_channel].rxtone);
 }
 
 static void tx_tone_changed(VariableItem* item) {
     BaofengApp* app = variable_item_get_context(item);
     uint8_t index = variable_item_get_current_value_index(item);
     set_tone_ui(item, index, app->item_text_tx_tone, &app->channels[app->current_edit_channel], true);
+    update_pol_visibility(app->item_tx_pol, app->channels[app->current_edit_channel].txtone);
 }
 
 static void tx_power_changed(VariableItem* item) {
@@ -322,16 +352,12 @@ void baofeng_scene_channel_edit_on_enter(void* context) {
     set_tone_ui(item_tx_tone, tx_tone_idx, app->item_text_tx_tone, ch, true);
     
     // RX Polarity
-    VariableItem* item_rx_pol = variable_item_list_add(app->variable_item_list, "RX DCS Pol", 2, rx_dcs_pol_changed, app);
-    uint8_t rx_pol_idx = (ch->rxtone[1] & 0x40) ? 1 : 0;
-    variable_item_set_current_value_index(item_rx_pol, rx_pol_idx);
-    variable_item_set_current_value_text(item_rx_pol, rx_pol_idx ? "R (Inv)" : "N (Norm)");
+    app->item_rx_pol = variable_item_list_add(app->variable_item_list, "RX DCS Pol", 2, rx_dcs_pol_changed, app);
+    update_pol_visibility(app->item_rx_pol, ch->rxtone);
 
     // TX Polarity
-    VariableItem* item_tx_pol = variable_item_list_add(app->variable_item_list, "TX DCS Pol", 2, tx_dcs_pol_changed, app);
-    uint8_t tx_pol_idx = (ch->txtone[1] & 0x40) ? 1 : 0;
-    variable_item_set_current_value_index(item_tx_pol, tx_pol_idx);
-    variable_item_set_current_value_text(item_tx_pol, tx_pol_idx ? "R (Inv)" : "N (Norm)");
+    app->item_tx_pol = variable_item_list_add(app->variable_item_list, "TX DCS Pol", 2, tx_dcs_pol_changed, app);
+    update_pol_visibility(app->item_tx_pol, ch->txtone);
     
     // Flags
     VariableItem* item_pow = variable_item_list_add(app->variable_item_list, "TX Power", 2, tx_power_changed, app);

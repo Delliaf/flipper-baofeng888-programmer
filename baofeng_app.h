@@ -64,6 +64,8 @@ typedef struct {
     
     VariableItem* item_rx_freq;
     VariableItem* item_tx_freq;
+    VariableItem* item_rx_pol;
+    VariableItem* item_tx_pol;
     
     bool debug_mode;
     uint8_t about_ok_clicks;
