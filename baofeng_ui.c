@@ -48,6 +48,7 @@ void baofeng_scene_main_menu_on_enter(void* context) {
     submenu_add_item(app->submenu, "Write (Clone) Radio", BaofengCustomEventMenuWrite, baofeng_main_menu_callback, app);
     submenu_add_item(app->submenu, "Load from SD", BaofengCustomEventMenuLoad, baofeng_main_menu_callback, app);
     submenu_add_item(app->submenu, "Save to SD", BaofengCustomEventMenuSave, baofeng_main_menu_callback, app);
+    submenu_add_item(app->submenu, "Settings", BaofengCustomEventMenuSettings, baofeng_main_menu_callback, app);
     submenu_add_item(app->submenu, "Wiring", BaofengCustomEventMenuWiring, baofeng_main_menu_callback, app);
     submenu_add_item(app->submenu, "About / Help", BaofengCustomEventMenuAbout, baofeng_main_menu_callback, app);
     view_dispatcher_switch_to_view(app->view_dispatcher, BaofengViewSubmenu);
@@ -84,6 +85,9 @@ bool baofeng_scene_main_menu_on_event(void* context, SceneManagerEvent event) {
             consumed = true;
         } else if(event.event == BaofengCustomEventMenuWiring) {
             scene_manager_next_scene(app->scene_manager, BaofengSceneWiring);
+            consumed = true;
+        } else if(event.event == BaofengCustomEventMenuSettings) {
+            scene_manager_next_scene(app->scene_manager, BaofengSceneSettings);
             consumed = true;
         }
     }
@@ -544,6 +548,7 @@ void (*const baofeng_on_enter_handlers[])(void*) = {
     baofeng_scene_wiring_on_enter,
     baofeng_scene_text_input_on_enter,
     baofeng_scene_save_name_on_enter,
+    baofeng_scene_settings_on_enter,
 };
 
 bool (*const baofeng_on_event_handlers[])(void*, SceneManagerEvent) = {
@@ -555,6 +560,7 @@ bool (*const baofeng_on_event_handlers[])(void*, SceneManagerEvent) = {
     baofeng_scene_wiring_on_event,
     baofeng_scene_text_input_on_event,
     baofeng_scene_save_name_on_event,
+    baofeng_scene_settings_on_event,
 };
 
 void (*const baofeng_on_exit_handlers[])(void*) = {
@@ -566,6 +572,7 @@ void (*const baofeng_on_exit_handlers[])(void*) = {
     baofeng_scene_wiring_on_exit,
     baofeng_scene_text_input_on_exit,
     baofeng_scene_save_name_on_exit,
+    baofeng_scene_settings_on_exit,
 };
 
 const SceneManagerHandlers baofeng_scene_handlers = {

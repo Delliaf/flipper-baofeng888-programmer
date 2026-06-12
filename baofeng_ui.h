@@ -22,4 +22,8 @@ void baofeng_scene_popup_on_enter(void* context);
 bool baofeng_scene_popup_on_event(void* context, SceneManagerEvent event);
 void baofeng_scene_popup_on_exit(void* context);
 
+void baofeng_scene_settings_on_enter(void* context);
+bool baofeng_scene_settings_on_event(void* context, SceneManagerEvent event);
+void baofeng_scene_settings_on_exit(void* context);
+
 extern const SceneManagerHandlers baofeng_scene_handlers;

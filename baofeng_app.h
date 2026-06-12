@@ -85,6 +85,7 @@ typedef enum {
     BaofengSceneWiring,
     BaofengSceneTextInput,
     BaofengSceneSaveName,
+    BaofengSceneSettings,
     BaofengSceneCount,
 } BaofengScene;
 
@@ -96,6 +97,7 @@ enum {
     BaofengCustomEventMenuLoad,
     BaofengCustomEventMenuSave,
     BaofengCustomEventMenuWiring,
+    BaofengCustomEventMenuSettings,
     BaofengCustomEventMenuAbout,
     BaofengCustomEventChannelSelected,
     BaofengCustomEventSaveChannel,
