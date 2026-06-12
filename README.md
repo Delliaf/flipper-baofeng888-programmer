@@ -21,7 +21,7 @@ A Flipper Zero application to read, edit, and clone memory for Baofeng BF-888S a
 
 ## Hardware Requirements
 
-To connect your Flipper Zero to the radio, you will need a Kenwood 2-pin style cable or a custom 1-pin Baofeng cable, wired to the Flipper's GPIO pins:
+To connect your Flipper Zero to the radio, you will need a Kenwood 2-pin style cable, wired to the Flipper's GPIO pins:
 
 ![Wiring Diagram](images/screen_wiring.png)
 
