@@ -65,6 +65,8 @@ typedef struct {
     VariableItem* item_rx_freq;
     VariableItem* item_tx_freq;
     
+    bool debug_mode;
+    uint8_t about_ok_clicks;
 } BaofengApp;
 
 typedef enum {

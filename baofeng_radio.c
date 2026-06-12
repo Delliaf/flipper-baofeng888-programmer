@@ -104,6 +104,11 @@ static bool radio_handshake() {
 }
 
 bool baofeng_radio_read(BaofengApp* app) {
+    if(app->debug_mode) {
+        furi_delay_ms(500);
+        return true;
+    }
+
     if(!rx_stream) rx_stream = furi_stream_buffer_alloc(2048, 1);
     furi_stream_buffer_reset(rx_stream);
     
@@ -168,6 +173,11 @@ error:
 }
 
 bool baofeng_radio_write(BaofengApp* app) {
+    if(app->debug_mode) {
+        furi_delay_ms(500);
+        return true;
+    }
+
     if(!rx_stream) rx_stream = furi_stream_buffer_alloc(2048, 1);
     furi_stream_buffer_reset(rx_stream);
     

@@ -349,6 +349,13 @@ static void baofeng_popup_callback(void* context) {
     scene_manager_previous_scene(app->scene_manager);
 }
 
+static void baofeng_about_hidden_btn_callback(GuiButtonType result, InputType type, void* context) {
+    BaofengApp* app = context;
+    if(type == InputTypeShort && result == GuiButtonTypeCenter) {
+        view_dispatcher_send_custom_event(app->view_dispatcher, 999);
+    }
+}
+
 void baofeng_scene_popup_on_enter(void* context) {
     BaofengApp* app = context;
     popup_reset(app->popup);
@@ -398,12 +405,30 @@ void baofeng_scene_about_on_enter(void* context) {
         "Warning: 3.3V logic used.\n"
     );
     
+    widget_add_button_element(app->widget, GuiButtonTypeCenter, " ", baofeng_about_hidden_btn_callback, app);
     view_dispatcher_switch_to_view(app->view_dispatcher, BaofengViewWidget);
 }
 
 bool baofeng_scene_about_on_event(void* context, SceneManagerEvent event) {
-    UNUSED(context);
-    UNUSED(event);
+    BaofengApp* app = context;
+    if(event.type == SceneManagerEventTypeCustom && event.event == 999) {
+        app->about_ok_clicks++;
+        if(app->about_ok_clicks >= 10) {
+            app->debug_mode = !app->debug_mode;
+            app->about_ok_clicks = 0;
+            DialogMessage* message = dialog_message_alloc();
+            dialog_message_set_header(message, "Debug Mode", 64, 10, AlignCenter, AlignTop);
+            if(app->debug_mode) {
+                dialog_message_set_text(message, "Debug mode ON.\nRadio bypass active.", 64, 30, AlignCenter, AlignCenter);
+            } else {
+                dialog_message_set_text(message, "Debug mode OFF.", 64, 30, AlignCenter, AlignCenter);
+            }
+            dialog_message_set_buttons(message, "OK", NULL, NULL);
+            dialog_message_show(app->dialogs, message);
+            dialog_message_free(message);
+        }
+        return true;
+    }
     return false;
 }
 
